@@ -1,0 +1,34 @@
+Criei a api key do gemini, em seguida fui organizar o ambiente, iniciei criando o ambiente virtual(venv).
+
+Ativei o venv e baixei a extensão do gemini, assim como passo a passo do site:
+https://ai.google.dev/gemini-api/docs/quickstart?hl=pt-br
+
+pip install -q -U google-genai
+
+pedi para IA fazer o código inicial de teste do advisor.py, adicionei e alterei as coisas que precisava no código e utilizando o modelo gemini-2.5-flash, fiz o primeiro teste, via cmd.
+
+Tive sucesso no teste, com uma ótima resposta da IA:
+
+==================================================
+
+--- RESPOSTA RECEBIDA DA IA ---
+Nome do Serviço: Oracle Autonomous Database
+Categoria: Database
+Justificativa Técnica: É um banco de dados autogerenciado que suporta armazenamento de dados convergentes (relacional, JSON, XML, BLOBs para imagens/PDFs) e oferece capacidades de Machine Learning embarcadas para obter insights diretamente dos dados, atendendo a todas as necessidades do cliente.
+Argumentos de Venda:
+*   Reduz custos operacionais e complexidade com gerenciamento 100% autônomo.
+*   Acelera a inovação ao consolidar diversos tipos de dados e ferramentas de IA/ML em uma única plataforma.
+*   Gera insights de marketing mais rápidos e precisos usando Machine Learning nativo.
+
+===================================================
+
+Após esta resposta, avancei para próxima etapa, Criando a Interface Web com Streamlit.
+
+tive que baixar o "pip install streamlit" para continuar
+
+Pedi para IA me gerar o novo código da nova etapa, após isso iniciei o programa utilizando:
+
+streamlit run advisor.py
+
+Porém tive problema de conexão, a API KEY não estava sendo encontrada, ent criei a pasta e o .streamlit e secrets.toml que contem a API KEY, após isso recarreguei a pagina e funcionou, realizei o primeiro teste com interface e funcionou 80%, apenas falto os argumentos de venda.
+
