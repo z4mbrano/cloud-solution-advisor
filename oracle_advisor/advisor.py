@@ -1,11 +1,55 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+from pathlib import Path
 
 # --- TÍTULO DA APLICAÇÃO ---
-st.set_page_config(page_title="Oracle Cloud Solution Advisor", page_icon="☁️")
-st.title("☁️ Oracle Cloud Solution Advisor")
-st.header("Análise de Necessidades com IA")
+st.set_page_config(page_title="Oracle Cloud Solution Advisor", page_icon="☁️", layout="wide")
+
+# --- SIDEBAR (HISTÓRICO) ---
+with st.sidebar:
+    st.markdown("""
+        <div class="history-sidebar">
+            <div class="sidebar-header">
+                                <img src="assets/img/logo_oracle_aside.png" alt="Oracle Logo" class="oracle-logo">
+                <h2>Histórico de Análises</h2>
+            </div>
+            <ul class="history-list">
+                <li class="active" title="Análise de Banco de Dados para Sistema de E-commerce com Alta Demanda">Análise de Banco de Dados para Sistema de E-commerce com Alta Demanda</li>
+                <li title="Solução de Storage para Arquivamento de Dados Históricos">Solução de Storage para Arquivamento de Dados Históricos</li>
+                <li title="Compute Cloud para Processamento de Machine Learning">Compute Cloud para Processamento de Machine Learning</li>
+                <li title="Migração de Ambiente On-Premise para OCI">Migração de Ambiente On-Premise para OCI</li>
+                <li title="Análise de Custos para Ambiente de Desenvolvimento">Análise de Custos para Ambiente de Desenvolvimento</li>
+                <li title="Configuração de Alta Disponibilidade para Aplicação Crítica">Configuração de Alta Disponibilidade para Aplicação Crítica</li>
+                <li title="Otimização de Performance para Banco de Dados">Otimização de Performance para Banco de Dados</li>
+                <li title="Arquitetura de Microsserviços na OCI">Arquitetura de Microsserviços na OCI</li>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
+
+# --- CONTEÚDO PRINCIPAL ---
+st.markdown("""
+    <div class="chat-container">
+        <div class="chat-main">
+            <h1>☁️ Oracle Cloud Solution Advisor</h1>
+            <div class="subheader">Análise de Necessidades com IA</div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- Carrega CSS local (opcional) ---
+try:
+    css_path = Path(__file__).parent / "style.css"
+    if css_path.exists():
+        with open(css_path, 'r', encoding='utf-8') as f:
+            css = f.read()
+        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    else:
+        # If not present, continue without failing.
+        pass
+except Exception:
+    # Be resilient: don't crash the app if styling fails to load.
+    pass
 
 
 # --- 1. CONFIGURAÇÃO ---
@@ -46,7 +90,7 @@ if st.button("Analisar Solução", type="primary"):
             Nome do Serviço: [Nome do serviço Oracle]
             Categoria: [Ex: Database, Compute, Storage, AI/ML]
             Justificativa Técnica: [Explicação curta e direta de por que este serviço é ideal, focando nos pontos-chave da necessidade do cliente]
-            Argumentos de Venda: [OBRIGATÓRIO: Forneça de 2 a 3 pontos principais, em formato de lista, que um vendedor usaria para destacar o valor e os benefícios de negócio desta solução.]
+            Argumentos de Venda: [OBRIGATÓRIO: Forneça 2 pontos principais, em formato de lista, que um vendedor usaria para destacar o valor e os benefícios de negócio desta solução.]
             """
             prompt_final = f"{instrucoes_para_ia}\n\nA necessidade do cliente é a seguinte:\n'{prompt_do_usuario}'"
             
@@ -58,8 +102,8 @@ if st.button("Analisar Solução", type="primary"):
                 st.subheader("✅ Solução Recomendada")
 
                 # DEBUG: Exibe a resposta bruta para ajudar no desenvolvimento
-                #st.write("🕵️‍♂️ Resposta Bruta da IA (para debug):")
-                #st.text(response.text)
+                st.write("🕵️‍♂️ Resposta Bruta da IA (para debug):")
+                st.text(response.text)
 
                 # --- PARSER INTELIGENTE PARA MÚLTIPLAS LINHAS ---
                 solucao = {}

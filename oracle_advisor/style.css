@@ -1,0 +1,265 @@
+/* Oracle Cloud Solution Advisor - ChatGPT-like dark theme with subtle Oracle accents */
+
+/* Reset Streamlit default styles */
+.stApp {
+    background: transparent;
+}
+
+.stApp > header {
+    background-color: transparent !important;
+}
+
+/* Streamlit sidebar reset */
+section[data-testid="stSidebar"] {
+    background-color: var(--sidebar-bg) !important;
+    width: 260px !important;
+}
+
+section[data-testid="stSidebar"] .stMarkdown {
+    padding: 0 !important;
+}
+
+:root{
+  --bg-main: #0E1117; /* main page background (ChatGPT-like) */
+  --text-main: #ECECEC; /* primary text color */
+  --accent: #D92B2B; /* subtle Oracle red accent */
+  --sidebar-bg: #2A2B32; /* sidebar background */
+  --textarea-bg: #40414F; /* prompt textarea background */
+  --muted: #8E8E8E; /* secondary / placeholder text */
+  --hover-surface: #343541; /* hover surface for list items */
+  --radius: 12px;
+  --max-width: 800px;
+}
+
+/* Global layout */
+html, body, #root, .main, .stApp {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Use flex to position main content and sidebar */
+body > .app-main, /* generic Streamlit wrapper fallback */
+body > .stApp,
+body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100vh;
+  width: 100vw;
+}
+
+.chat-container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: var(--max-width);
+  gap: 18px;
+}
+
+/* Title sizing */
+h1, .app-title {
+  font-size: 2.5rem;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+}
+
+/* Prompt area */
+.prompt-area {
+  width: 100%;
+  position: relative; /* allows absolute-positioned send button */
+}
+
+.prompt-area textarea,
+.prompt-area .stTextArea textarea {
+  width: 100%;
+  min-height: 120px;
+  max-height: 40vh;
+  background: var(--textarea-bg);
+  color: var(--text-main);
+  border: none;
+  border-radius: var(--radius);
+  padding: 15px 20px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  resize: vertical;
+  outline: none;
+  transition: box-shadow 160ms ease, transform 120ms ease;
+}
+
+.prompt-area textarea::placeholder,
+.prompt-area .stTextArea textarea::placeholder {
+  color: var(--muted);
+}
+
+.prompt-area textarea:focus,
+.prompt-area .stTextArea textarea:focus {
+  box-shadow: 0 6px 20px rgba(217,43,43,0.14), 0 1px 0 rgba(217,43,43,0.06) inset;
+}
+
+/* Submit button placed inside prompt area (optional) */
+.prompt-send {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(217,43,43,0.16);
+}
+
+.prompt-send:hover { filter: brightness(0.95); }
+
+/* History sidebar */
+.history-sidebar {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Sidebar Header with Logo */
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.oracle-logo {
+    width: 120px;
+    height: auto;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+}
+
+.oracle-logo:hover {
+    opacity: 1;
+}
+
+/* Override Streamlit's default sidebar padding */
+.stSidebar .stSidebarContent {
+    padding-top: 1rem;
+    background: var(--sidebar-bg);
+}.history-sidebar h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.history-list li {
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin-bottom: 4px;
+    border-left: 4px solid transparent;
+}
+
+/* Estilo do tooltip nativo */
+[title] {
+    position: relative;
+    cursor: help;
+}
+
+.history-list li:hover {
+    background-color: var(--hover-surface);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.history-list li.active {
+    background-color: rgba(217,43,43,0.12);
+    border-left: 4px solid var(--accent);
+    font-weight: 500;
+}
+
+.history-list li::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.history-list li:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}/* Secondary text / muted elements */
+.muted, .secondary {
+  color: var(--muted);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    section[data-testid="stSidebar"].st-emotion-cache-1cypcdb.ea3mdgi5 {
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+    .chat-container { 
+        padding: 16px;
+        margin-left: 0;
+    }
+    .prompt-area textarea { 
+        min-height: 110px; 
+    }
+}/* Small utility classes */
+.card {
+  background: rgba(255,255,255,0.02);
+  padding: 12px;
+  border-radius: 10px;
+}
+
+/* make links use accent color */
+a { color: var(--accent); }
