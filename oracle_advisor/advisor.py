@@ -1,17 +1,32 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import google.generativeai as genai
 import os
 from pathlib import Path
+import html
 
 # --- TÍTULO DA APLICAÇÃO ---
-st.set_page_config(page_title="Oracle Cloud Solution Advisor", page_icon="☁️", layout="wide")
+# Configurar caminhos de assets
+assets_path = os.path.join(os.path.dirname(__file__), "assets")
+img_path = os.path.join(assets_path, "img")
+logo_path = os.path.join(img_path, "logo_oracle_aside.png")
+favicon_path = os.path.join(assets_path, "favicon-oracle.ico")
+
+st.set_page_config(
+    page_title="Oracle Cloud Solution Advisor",
+    page_icon=favicon_path,
+    layout="wide"
+)
 
 # --- SIDEBAR (HISTÓRICO) ---
 with st.sidebar:
+    # Carrega a logo usando st.image
+    st.image(logo_path, use_container_width=True)
+    
+    # Conteúdo do histórico
     st.markdown("""
         <div class="history-sidebar">
             <div class="sidebar-header">
-                                <img src="assets/img/logo_oracle_aside.png" alt="Oracle Logo" class="oracle-logo">
                 <h2>Histórico de Análises</h2>
             </div>
             <ul class="history-list">
@@ -45,15 +60,11 @@ try:
             css = f.read()
         st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
     else:
-        # If not present, continue without failing.
         pass
 except Exception:
-    # Be resilient: don't crash the app if styling fails to load.
     pass
 
-
 # --- 1. CONFIGURAÇÃO ---
-# Mudar API KEY para uma variavel!
 try:
     GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', st.secrets["GOOGLE_API_KEY"])
     genai.configure(api_key=GOOGLE_API_KEY)
@@ -74,13 +85,10 @@ if st.button("Analisar Solução", type="primary"):
     if not prompt_do_usuario:
         st.warning("Por favor, insira a descrição do problema do cliente.")
     else:
-        # --- LÓGICA DA IA (só roda quando o botão é clicado) ---
         with st.spinner("A IA está analisando a necessidade e montando a solução..."):
-            # Configuração do modelo generativo
             model_name = 'gemini-2.5-flash'
             model = genai.GenerativeModel(model_name)
-
-            # O prompt de instruções continua o mesmo
+            
             instrucoes_para_ia = """
             Você é um especialista em soluções Oracle Cloud altamente qualificado. Sua tarefa é analisar a necessidade de um cliente e recomendar UM serviço principal da Oracle que seja o coração da solução.
             Mesmo que o cliente mencione uma nuvem concorrente (como AWS, Azure, GCP), sua recomendação deve ser focada 100% em soluções Oracle Cloud, destacando os diferenciais e vantagens competitivas da Oracle.
@@ -90,45 +98,176 @@ if st.button("Analisar Solução", type="primary"):
             Nome do Serviço: [Nome do serviço Oracle]
             Categoria: [Ex: Database, Compute, Storage, AI/ML]
             Justificativa Técnica: [Explicação curta e direta de por que este serviço é ideal, focando nos pontos-chave da necessidade do cliente]
-            Argumentos de Venda: [OBRIGATÓRIO: Forneça 2 pontos principais, em formato de lista, que um vendedor usaria para destacar o valor e os benefícios de negócio desta solução.]
+            Argumentos de Venda: [OBRIGATÓRIO: Forneça de 2 a 3 pontos principais, em formato de lista, que um vendedor usaria para destacar o valor e os benefícios de negócio desta solução.]
             """
             prompt_final = f"{instrucoes_para_ia}\n\nA necessidade do cliente é a seguinte:\n'{prompt_do_usuario}'"
             
             try:
                 response = model.generate_content(prompt_final)
-                
-                # --- EXIBIÇÃO DO RESULTADO ---
+
                 st.divider()
-                st.subheader("✅ Solução Recomendada")
+                st.subheader("Solução Recomendada")
 
-                # DEBUG: Exibe a resposta bruta para ajudar no desenvolvimento
-                st.write("🕵️‍♂️ Resposta Bruta da IA (para debug):")
-                st.text(response.text)
-
-                # --- PARSER INTELIGENTE PARA MÚLTIPLAS LINHAS ---
+                # Parse the IA response into sections
                 solucao = {}
                 current_key = None
-                linhas_resposta = response.text.strip().split('\n')
+                linhas_resposta = response.text.strip().split('\n') if getattr(response, 'text', None) else []
 
                 for linha in linhas_resposta:
-                    # Verifica se a linha define uma nova chave
                     if ':' in linha:
                         chave, valor = linha.split(':', 1)
                         current_key = chave.strip()
                         solucao[current_key] = valor.strip()
-                    # Se não for uma nova chave, é a continuação da anterior
-                    elif current_key and linha.strip(): 
+                    elif current_key and linha.strip():
                         solucao[current_key] += '\n' + linha.strip()
 
-                # --- EXIBIÇÃO FORMATADA ---
-                if 'Nome do Serviço' in solucao and 'Categoria' in solucao:
-                    st.subheader(f"{solucao.get('Nome do Serviço', 'N/A')} ({solucao.get('Categoria', 'N/A')})")
+                # Display the raw response in a styled div
+                formatted_response = response.text.strip() if getattr(response, 'text', None) else ''
 
-                if 'Justificativa Técnica' in solucao and solucao['Justificativa Técnica'].strip():
-                    st.info(f"**Justificativa Técnica:** {solucao['Justificativa Técnica']}")
+                # Simple formatter: escapes HTML and converts common patterns (code fences, lists, paragraphs)
+                def format_ai_text(txt):
+                    import re
+                    esc = html.escape(txt)
+                    lines = esc.splitlines()
+                    out_parts = []
+                    in_code = False
+                    code_acc = []
 
-                if 'Argumentos de Venda' in solucao and solucao['Argumentos de Venda'].strip():
-                    st.success(f"**Argumentos de Venda:**\n{solucao['Argumentos de Venda']}")
+                    # First pass: handle ``` code fences and keep other lines
+                    for line in lines:
+                        if line.strip().startswith('```'):
+                            if not in_code:
+                                in_code = True
+                                code_acc = []
+                            else:
+                                # close code block
+                                out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
+                                in_code = False
+                            continue
+                        if in_code:
+                            code_acc.append(line)
+                        else:
+                            out_parts.append(line)
+
+                    # If code block wasn't closed, flush it
+                    if in_code and code_acc:
+                        out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
+
+                    # Second pass: convert lists and paragraphs
+                    html_chunks = []
+                    ul_open = False
+                    ol_open = False
+                    for part in out_parts:
+                        if part.startswith('<pre>'):
+                            # close lists if open
+                            if ul_open:
+                                html_chunks.append('</ul>')
+                                ul_open = False
+                            if ol_open:
+                                html_chunks.append('</ol>')
+                                ol_open = False
+                            html_chunks.append(part)
+                            continue
+
+                        # unordered list
+                        m = re.match(r'^\s*[-\*]\s+(.*)', part)
+                        # ordered list
+                        m2 = re.match(r'^\s*(\d+)\.\s+(.*)', part)
+
+                        if m:
+                            if not ul_open:
+                                html_chunks.append('<ul>')
+                                ul_open = True
+                            html_chunks.append(f"<li>{m.group(1)}</li>")
+                        elif m2:
+                            if not ol_open:
+                                html_chunks.append('<ol>')
+                                ol_open = True
+                            html_chunks.append(f"<li>{m2.group(2)}</li>")
+                        elif part.strip() == '':
+                            # blank line -> paragraph break
+                            if ul_open:
+                                html_chunks.append('</ul>')
+                                ul_open = False
+                            if ol_open:
+                                html_chunks.append('</ol>')
+                                ol_open = False
+                            html_chunks.append('<br/>')
+                        else:
+                            html_chunks.append(f"<p>{part}</p>")
+
+                    if ul_open:
+                        html_chunks.append('</ul>')
+                    if ol_open:
+                        html_chunks.append('</ol>')
+
+                    return '\n'.join(html_chunks)
+
+                formatted_html = format_ai_text(formatted_response)
+
+                                        # Use a template and replace a placeholder to avoid Python f-string/format brace collisions with JS
+                template = '''
+                <div class="response-area" style="background-color: #262730; color: #ECECEC; font-family: Inter, Roboto, Arial; border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <button class="copy-button" aria-label="Copiar resposta" title="Copiar resposta" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #8E8E8E; cursor: pointer; padding: 5px;">
+                        <!-- copy icon: two overlapping squares -->
+                        <svg id="copy-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 20px; height: 20px;">
+                            <rect x="6" y="9" width="15" height="15" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
+                            <rect x="3" y="6" width="15" height="15" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
+                        </svg>
+                    </button>
+                    <div class="copy-feedback" id="copy-feedback" role="status" aria-live="polite" style="display: none; position: absolute; top: 10px; right: 45px; background: #343541; color: #ECECEC; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Copiado!</div>
+
+                    <div class="response-content" id="response-content" style="color: #ECECEC; white-space: pre-wrap; word-break: break-word;">RESPONSE_PLACEHOLDER</div>
+                </div>
+
+                <script>
+                (function(){
+                    var btn = document.querySelector('.copy-button');
+                    var icon = document.getElementById('copy-icon');
+                    var content = document.getElementById('response-content');
+                    var feedback = document.getElementById('copy-feedback');
+                    var originalIcon = icon && icon.outerHTML;
+
+                    function showFeedback(){
+                        feedback.style.display = 'block';
+                        btn.classList.add('copy-button--success');
+                        // swap icon to check
+                        if(icon){
+                            icon.outerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        }
+                        setTimeout(function(){
+                            feedback.style.display = 'none';
+                            btn.classList.remove('copy-button--success');
+                            // restore icon
+                            var el = document.querySelector('.copy-button svg');
+                            if(el && originalIcon) el.outerHTML = originalIcon;
+                        }, 1600);
+                    }
+
+                    if (btn) {
+                        btn.addEventListener('click', function(e){
+                            try{
+                                var txt = content.innerText || content.textContent || '';
+                                navigator.clipboard.writeText(txt).then(function(){
+                                    showFeedback();
+                                }).catch(function(){
+                                    // Fallback: use execCommand if secure clipboard unavailable
+                                    var ta = document.createElement('textarea');
+                                    ta.value = txt;
+                                    document.body.appendChild(ta);
+                                    ta.select();
+                                    try{ document.execCommand('copy'); showFeedback(); }catch(err){ alert('Falha ao copiar para a área de transferência'); }
+                                    ta.remove();
+                                });
+                            }catch(err){ alert('Falha ao copiar: '+err); }
+                        });
+                    }
+                })();
+                </script>
+                '''
+
+                html_content = template.replace('RESPONSE_PLACEHOLDER', formatted_html)
+                components.html(html_content, height=360, scrolling=True)
 
             except Exception as e:
                 st.error(f"Ocorreu um erro ao contatar a API de IA: {e}")

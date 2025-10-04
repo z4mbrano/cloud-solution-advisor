@@ -83,6 +83,173 @@ h1, .app-title {
   color: var(--text-main);
 }
 
+/* Área de resposta da IA */
+.response-area {
+  width: 100%;
+  background-color: #262730 !important;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 1rem 0;
+  position: relative;
+  font-size: 15px;
+  line-height: 1.6;
+  color: red !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.response-content {
+  white-space: pre-wrap;
+  color: var(--text-main);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  word-break: break-word;
+}
+
+/* Botão de copiar */
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.copy-button svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* Feedback de cópia */
+.copy-feedback {
+  position: absolute;
+  top: 10px;
+  right: 45px;
+  background: var(--hover-surface);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.copy-feedback.visible {
+  opacity: 1;
+}
+
+/* Formatação do texto da resposta */
+.response-content p {
+  margin: 0 0 1em 0;
+}
+
+.response-content strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.response-content ul, 
+.response-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.response-content li {
+  margin: 0.5em 0;
+}
+
+.response-content pre,
+.response-content code {
+  background: rgba(0, 0, 0, 0.2);
+  font-family: 'Consolas', 'Courier New', monospace;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+}
+
+.response-content pre {
+  padding: 1em;
+  margin: 1em 0;
+  overflow-x: auto;
+}
+
+.response-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.response-content a:hover {
+  text-decoration: underline;
+}
+
+.response-content p {
+  margin: 0.75rem 0;
+}
+
+.response-content ul, .response-content ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.response-content pre {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.response-content code {
+  font-family: 'Courier New', monospace;
+}
+
+/* Botão de copiar */
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--accent);
+}
+
+.copy-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.copy-button--success {
+  color: #28a745 !important;
+}
+
+/* Feedback de cópia */
+.copy-feedback {
+  position: absolute;
+  top: 10px;
+  right: 45px;
+  background-color: rgba(40, 167, 69, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: none;
+}
+
 /* Prompt area */
 .prompt-area {
   width: 100%;
@@ -263,3 +430,59 @@ h1, .app-title {
 
 /* make links use accent color */
 a { color: var(--accent); }
+
+
+.response-content {
+  color: var(--text-main);
+  white-space: pre-wrap; /* preserve line breaks */
+  word-break: break-word;
+  line-height: 1.45;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.response-content p { margin: 0 0 8px 0; }
+.response-content strong { font-weight: 700; }
+.response-content ul, .response-content ol { padding-left: 20px; margin: 6px 0 12px 0; }
+.response-content a { color: var(--accent); text-decoration: underline; }
+.response-content pre, .response-content code {
+  font-family: 'Courier New', monospace;
+  padding: 10px;
+  border-radius: 8px;
+  display: block;
+  color: var(--text-main);
+  overflow: auto;
+}
+
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #8E8E8E;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 160ms ease, transform 100ms ease;
+}
+
+.copy-button:hover { color: var(--text-main); transform: translateY(-1px); }
+.copy-button svg { width: 18px; height: 18px; display: block; }
+
+.copy-feedback {
+  position: absolute;
+  top: 12px;
+  right: 46px;
+  color: #7ED957;
+  font-weight: 600;
+  display: none;
+  background: rgba(0,0,0,0.24);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.copy-button--success { color: #7ED957 !important; }
