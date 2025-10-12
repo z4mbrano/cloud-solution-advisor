@@ -1,3 +1,6 @@
+Senha infinityfree: aQBBXL4qDL
+
+
 Criei a api key do gemini, em seguida fui organizar o ambiente, iniciei criando o ambiente virtual(venv).
 
 Ativei o venv e baixei a extensão do gemini, assim como passo a passo do site:

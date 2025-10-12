@@ -40,27 +40,15 @@ with st.sidebar:
                 <li title="Arquitetura de Microsserviços na OCI">Arquitetura de Microsserviços na OCI</li>
             </ul>
         </div>
-    """, unsafe_allow_html=True)
+stream    """, unsafe_allow_html=True)
 
-# --- CONTEÚDO PRINCIPAL ---
-st.markdown("""
-    <div class="chat-container">
-        <div class="chat-main">
-            <h1>☁️ Oracle Cloud Solution Advisor</h1>
-            <div class="subheader">Análise de Necessidades com IA</div>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
-# --- Carrega CSS local (opcional) ---
+# --- Carrega CSS local ---
 try:
     css_path = Path(__file__).parent / "style.css"
     if css_path.exists():
         with open(css_path, 'r', encoding='utf-8') as f:
             css = f.read()
         st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-    else:
-        pass
 except Exception:
     pass
 
@@ -72,19 +60,189 @@ except (ValueError, KeyError) as e:
     st.error("Chave de API do Google não configurada. Por favor, configure a variável de ambiente GOOGLE_API_KEY.")
     st.stop()
 
-# --- INTERFACE DO USUÁRIO ---
-st.subheader("Descreva o desafio do seu cliente:")
-prompt_do_usuario = st.text_area(
-    "Insira aqui a descrição do problema, requisitos técnicos e objetivos de negócio.",
-    height=150,
-    placeholder="Ex: O cliente precisa de um banco de dados autogerenciado para o novo sistema de marketing..."
-)
+# --- Estado do Chat ---
+if 'chat_active' not in st.session_state:
+    st.session_state.chat_active = False
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+if 'current_input' not in st.session_state:
+    st.session_state.current_input = ""
 
-# Botão para iniciar a análise
-if st.button("Analisar Solução", type="primary"):
-    if not prompt_do_usuario:
+# --- CONTEÚDO PRINCIPAL ---
+st.markdown("""
+    <div class="chat-container">
+        <div class="chat-main">
+            <h1>☁️ Oracle Cloud Solution Advisor</h1>
+            <div class="subheader">Análise de Necessidades com IA</div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- INTERFACE DO USUÁRIO ---
+# Container para as mensagens do chat
+with st.container():
+    # Exibir histórico de mensagens
+    for idx, msg in enumerate(st.session_state.messages):
+        if msg['sender'] == 'user':
+            st.markdown(f"""
+                <div class="message user-message">
+                    <div class="message-content">{html.escape(msg['text'])}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        else:  # bot
+            # Formatar a resposta do bot
+            def format_ai_text(txt):
+                import re
+                esc = html.escape(txt)
+                lines = esc.splitlines()
+                out_parts = []
+                in_code = False
+                code_acc = []
+
+                # First pass: handle ``` code fences and keep other lines
+                for line in lines:
+                    if line.strip().startswith('```'):
+                        if not in_code:
+                            in_code = True
+                            code_acc = []
+                        else:
+                            # close code block
+                            out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
+                            in_code = False
+                        continue
+                    if in_code:
+                        code_acc.append(line)
+                    else:
+                        out_parts.append(line)
+
+                # If code block wasn't closed, flush it
+                if in_code and code_acc:
+                    out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
+
+                # Second pass: convert lists and paragraphs
+                html_chunks = []
+                ul_open = False
+                ol_open = False
+                for part in out_parts:
+                    if part.startswith('<pre>'):
+                        # close lists if open
+                        if ul_open:
+                            html_chunks.append('</ul>')
+                            ul_open = False
+                        if ol_open:
+                            html_chunks.append('</ol>')
+                            ol_open = False
+                        html_chunks.append(part)
+                        continue
+
+                    # unordered list
+                    m = re.match(r'^\s*[-\*]\s+(.*)', part)
+                    # ordered list
+                    m2 = re.match(r'^\s*(\d+)\.\s+(.*)', part)
+
+                    if m:
+                        if not ul_open:
+                            html_chunks.append('<ul>')
+                            ul_open = True
+                        html_chunks.append(f"<li>{m.group(1)}</li>")
+                    elif m2:
+                        if not ol_open:
+                            html_chunks.append('<ol>')
+                            ol_open = True
+                        html_chunks.append(f"<li>{m2.group(2)}</li>")
+                    elif part.strip() == '':
+                        # blank line -> paragraph break
+                        if ul_open:
+                            html_chunks.append('</ul>')
+                            ul_open = False
+                        if ol_open:
+                            html_chunks.append('</ol>')
+                            ol_open = False
+                        html_chunks.append('<br/>')
+                    else:
+                        html_chunks.append(f"<p>{part}</p>")
+
+                if ul_open:
+                    html_chunks.append('</ul>')
+                if ol_open:
+                    html_chunks.append('</ol>')
+
+                return '\n'.join(html_chunks)
+            
+            formatted_html = format_ai_text(msg['text'])
+            
+            template = f'''
+            <div class="response-area message bot-message" style="background-color: #40414F; color: #ECECEC; font-family: Inter, Roboto, Arial; border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 1rem 0; position: relative;">
+                <button class="copy-button copy-btn-{idx}" aria-label="Copiar resposta" title="Copiar resposta" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #8E8E8E; cursor: pointer; padding: 5px;">
+                    <svg class="copy-icon-{idx}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 20px; height: 20px;">
+                        <rect x="9" y="9" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
+                        <rect x="6" y="6" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
+                    </svg>
+                </button>
+                <div class="copy-feedback copy-feedback-{idx}" role="status" aria-live="polite" style="display: none; position: absolute; top: 10px; right: 45px; background: #343541; color: #ECECEC; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Copiado!</div>
+                <div class="response-content response-content-{idx}" style="color: #ECECEC; white-space: pre-wrap; word-break: break-word;">{formatted_html}</div>
+            </div>
+            <script>
+            (function(){{
+                var btn = document.querySelector('.copy-btn-{idx}');
+                var icon = document.querySelector('.copy-icon-{idx}');
+                var content = document.querySelector('.response-content-{idx}');
+                var feedback = document.querySelector('.copy-feedback-{idx}');
+                if(btn && icon && content && feedback){{
+                    var originalIcon = icon.outerHTML;
+                    btn.addEventListener('click', function(){{
+                        var txt = content.innerText || content.textContent || '';
+                        navigator.clipboard.writeText(txt).then(function(){{
+                            feedback.style.display = 'block';
+                            icon.outerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                            setTimeout(function(){{
+                                feedback.style.display = 'none';
+                                var el = btn.querySelector('svg');
+                                if(el) el.outerHTML = originalIcon;
+                            }}, 1600);
+                        }}).catch(function(){{
+                            alert('Falha ao copiar');
+                        }});
+                    }});
+                }}
+            }})();
+            </script>
+            '''
+            components.html(template, height=400, scrolling=True)
+
+# Área de input fixa na parte inferior
+input_area_class = "input-area fixed-bottom" if st.session_state.chat_active else "input-area"
+
+# Usar form do Streamlit para capturar o input
+with st.form(key="chat_form", clear_on_submit=True):
+    col1, col2 = st.columns([9, 1])
+    
+    with col1:
+        prompt_do_usuario = st.text_area(
+            "Prompt",
+            key="prompt_input",
+            label_visibility="collapsed",
+            placeholder="Descreva o desafio do seu cliente...",
+            height=100
+        )
+    
+    with col2:
+        st.write("")  # Espaçamento
+        submit_button = st.form_submit_button("▶", use_container_width=True)
+
+# Processar o envio
+if submit_button and prompt_do_usuario and prompt_do_usuario.strip():
+    if not prompt_do_usuario or not prompt_do_usuario.strip():
         st.warning("Por favor, insira a descrição do problema do cliente.")
     else:
+        # Ativar o modo chat e adicionar mensagem do usuário
+        st.session_state.chat_active = True
+        st.session_state.messages.append({
+            'id': len(st.session_state.messages),
+            'text': prompt_do_usuario,
+            'sender': 'user'
+        })
+        
         with st.spinner("A IA está analisando a necessidade e montando a solução..."):
             model_name = 'gemini-2.5-flash'
             model = genai.GenerativeModel(model_name)
@@ -104,170 +262,17 @@ if st.button("Analisar Solução", type="primary"):
             
             try:
                 response = model.generate_content(prompt_final)
-
-                st.divider()
-                st.subheader("Solução Recomendada")
-
-                # Parse the IA response into sections
-                solucao = {}
-                current_key = None
-                linhas_resposta = response.text.strip().split('\n') if getattr(response, 'text', None) else []
-
-                for linha in linhas_resposta:
-                    if ':' in linha:
-                        chave, valor = linha.split(':', 1)
-                        current_key = chave.strip()
-                        solucao[current_key] = valor.strip()
-                    elif current_key and linha.strip():
-                        solucao[current_key] += '\n' + linha.strip()
-
-                # Display the raw response in a styled div
-                formatted_response = response.text.strip() if getattr(response, 'text', None) else ''
-
-                # Simple formatter: escapes HTML and converts common patterns (code fences, lists, paragraphs)
-                def format_ai_text(txt):
-                    import re
-                    esc = html.escape(txt)
-                    lines = esc.splitlines()
-                    out_parts = []
-                    in_code = False
-                    code_acc = []
-
-                    # First pass: handle ``` code fences and keep other lines
-                    for line in lines:
-                        if line.strip().startswith('```'):
-                            if not in_code:
-                                in_code = True
-                                code_acc = []
-                            else:
-                                # close code block
-                                out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
-                                in_code = False
-                            continue
-                        if in_code:
-                            code_acc.append(line)
-                        else:
-                            out_parts.append(line)
-
-                    # If code block wasn't closed, flush it
-                    if in_code and code_acc:
-                        out_parts.append('<pre><code>{}</code></pre>'.format("\n".join(code_acc)))
-
-                    # Second pass: convert lists and paragraphs
-                    html_chunks = []
-                    ul_open = False
-                    ol_open = False
-                    for part in out_parts:
-                        if part.startswith('<pre>'):
-                            # close lists if open
-                            if ul_open:
-                                html_chunks.append('</ul>')
-                                ul_open = False
-                            if ol_open:
-                                html_chunks.append('</ol>')
-                                ol_open = False
-                            html_chunks.append(part)
-                            continue
-
-                        # unordered list
-                        m = re.match(r'^\s*[-\*]\s+(.*)', part)
-                        # ordered list
-                        m2 = re.match(r'^\s*(\d+)\.\s+(.*)', part)
-
-                        if m:
-                            if not ul_open:
-                                html_chunks.append('<ul>')
-                                ul_open = True
-                            html_chunks.append(f"<li>{m.group(1)}</li>")
-                        elif m2:
-                            if not ol_open:
-                                html_chunks.append('<ol>')
-                                ol_open = True
-                            html_chunks.append(f"<li>{m2.group(2)}</li>")
-                        elif part.strip() == '':
-                            # blank line -> paragraph break
-                            if ul_open:
-                                html_chunks.append('</ul>')
-                                ul_open = False
-                            if ol_open:
-                                html_chunks.append('</ol>')
-                                ol_open = False
-                            html_chunks.append('<br/>')
-                        else:
-                            html_chunks.append(f"<p>{part}</p>")
-
-                    if ul_open:
-                        html_chunks.append('</ul>')
-                    if ol_open:
-                        html_chunks.append('</ol>')
-
-                    return '\n'.join(html_chunks)
-
-                formatted_html = format_ai_text(formatted_response)
-
-                                        # Use a template and replace a placeholder to avoid Python f-string/format brace collisions with JS
-                template = '''
-                <div class="response-area" style="background-color: #262730; color: #ECECEC; font-family: Inter, Roboto, Arial; border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <button class="copy-button" aria-label="Copiar resposta" title="Copiar resposta" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #8E8E8E; cursor: pointer; padding: 5px;">
-                        <!-- copy icon: two overlapping squares -->
-                        <svg id="copy-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 20px; height: 20px;">
-                            <rect x="6" y="9" width="15" height="15" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
-                            <rect x="3" y="6" width="15" height="15" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
-                        </svg>
-                    </button>
-                    <div class="copy-feedback" id="copy-feedback" role="status" aria-live="polite" style="display: none; position: absolute; top: 10px; right: 45px; background: #343541; color: #ECECEC; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Copiado!</div>
-
-                    <div class="response-content" id="response-content" style="color: #ECECEC; white-space: pre-wrap; word-break: break-word;">RESPONSE_PLACEHOLDER</div>
-                </div>
-
-                <script>
-                (function(){
-                    var btn = document.querySelector('.copy-button');
-                    var icon = document.getElementById('copy-icon');
-                    var content = document.getElementById('response-content');
-                    var feedback = document.getElementById('copy-feedback');
-                    var originalIcon = icon && icon.outerHTML;
-
-                    function showFeedback(){
-                        feedback.style.display = 'block';
-                        btn.classList.add('copy-button--success');
-                        // swap icon to check
-                        if(icon){
-                            icon.outerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                        }
-                        setTimeout(function(){
-                            feedback.style.display = 'none';
-                            btn.classList.remove('copy-button--success');
-                            // restore icon
-                            var el = document.querySelector('.copy-button svg');
-                            if(el && originalIcon) el.outerHTML = originalIcon;
-                        }, 1600);
-                    }
-
-                    if (btn) {
-                        btn.addEventListener('click', function(e){
-                            try{
-                                var txt = content.innerText || content.textContent || '';
-                                navigator.clipboard.writeText(txt).then(function(){
-                                    showFeedback();
-                                }).catch(function(){
-                                    // Fallback: use execCommand if secure clipboard unavailable
-                                    var ta = document.createElement('textarea');
-                                    ta.value = txt;
-                                    document.body.appendChild(ta);
-                                    ta.select();
-                                    try{ document.execCommand('copy'); showFeedback(); }catch(err){ alert('Falha ao copiar para a área de transferência'); }
-                                    ta.remove();
-                                });
-                            }catch(err){ alert('Falha ao copiar: '+err); }
-                        });
-                    }
-                })();
-                </script>
-                '''
-
-                html_content = template.replace('RESPONSE_PLACEHOLDER', formatted_html)
-                components.html(html_content, height=360, scrolling=True)
+                
+                # Adicionar resposta do bot ao histórico
+                if hasattr(response, 'text') and response.text:
+                    st.session_state.messages.append({
+                        'id': len(st.session_state.messages),
+                        'text': response.text.strip(),
+                        'sender': 'bot'
+                    })
+                
+                # Rerun para atualizar a interface
+                st.rerun()
 
             except Exception as e:
                 st.error(f"Ocorreu um erro ao contatar a API de IA: {e}")
