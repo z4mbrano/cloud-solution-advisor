@@ -9,7 +9,7 @@ import {
   DatabaseZap, 
   Gauge, 
   Network,
-  LogIn
+  LogOut
 } from 'lucide-react'
 import styles from './Sidebar.module.css'
 
@@ -86,17 +86,33 @@ function Sidebar({ isCollapsed, toggleSidebar, activeChat, setActiveChat }) {
         </ul>
       </nav>
 
-      {/* Rodapé do Sidebar: Login */}
+      {/* NOVO Rodapé do Sidebar: Perfil do Usuário */}
       <div className={styles.sidebarFooter}>
-        <button
-          className={styles.loginButton}
-          title={isCollapsed ? "Login" : undefined}
-        >
-          <LogIn size={20} className={styles.icon} />
-          <span className={`${styles.itemText} ${isCollapsed ? styles.hidden : ''}`}>
-            Login
-          </span>
-        </button>
+        <div className={styles.profileContainer}>
+          
+          {/* Avatar (Sempre visível, centralizado quando colapsado) */}
+          <div 
+            className={`${styles.avatar} ${isCollapsed ? styles.avatarCentered : ''}`}
+          >
+            G {/* Letra do nome do usuário */}
+          </div>
+          
+          {/* Info do Usuário (Nome e Logout) - Só aparece expandido */}
+          <div className={`${styles.userInfo} ${isCollapsed ? styles.hidden : ''}`}>
+            {/* Nome do Usuário */}
+            <span className={styles.userName}>
+              Guilherme B. {/* Nome do usuário */}
+            </span>
+            
+            {/* Botão Logout */}
+            <button 
+              title="Logout" 
+              className={styles.logoutButton}
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   )
