@@ -7,27 +7,6 @@
   position: relative;
 }
 
-.toggleButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-  background-color: #2f2f37;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 8px 4px;
-  color: #ECECEC;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toggleButton:hover {
-  background-color: #3f3f47;
-}
-
 .mainContent {
   flex: 1;
   display: flex;
@@ -54,12 +33,4 @@
   .layout {
     flex-direction: column;
   }
-
-  .toggleButton {
-    top: 20px;
-    left: 20px !important;
-    transform: none;
-    border-radius: 8px;
-  }
 }
-

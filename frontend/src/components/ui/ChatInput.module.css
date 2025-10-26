@@ -1,0 +1,74 @@
+.inputContainer {
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+  background-color: #3a3a40;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 56px;
+}
+
+.shareButton {
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: #d1d5db;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shareButton:hover {
+  background-color: #52525b;
+}
+
+.textarea {
+  flex: 1;
+  margin: 0 0.5rem;
+  margin-bottom: 0.25rem;
+  background: transparent;
+  color: #e5e7eb;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  font-size: 1rem;
+  line-height: 1.5;
+  max-height: 200px;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+}
+
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f80000;
+  color: white;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: #c70000;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
