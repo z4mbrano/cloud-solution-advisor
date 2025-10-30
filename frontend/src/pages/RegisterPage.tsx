@@ -1,93 +1,21 @@
-import React, { useState } from 'react'
-import { AuthLayout } from '../components/layouts/AuthLayout'
-import { Link, useNavigate } from 'react-router-dom'
+import { RegisterForm } from '@/components/ui/RegisterForm'
+import { SplineSceneBasic } from '@/components/ui/SplineSceneBasic'
 
-export const RegisterPage: React.FC = () => {
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault()
-    // Redirecionar para home após registro
-    navigate('/')
-  }
-
+export function RegisterPage() {
   return (
-    <AuthLayout>
-      <form onSubmit={onSubmit} className="space-y-5">
-        <div>
-          <input
-            id="username"
-            type="text"
-            placeholder="nome de usuário"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1a1a1a] text-white placeholder-[#666666] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0000] transition-all duration-300 text-sm"
-            autoComplete="name"
-            required
-          />
+    <div className="w-full min-h-screen bg-[#1a1a1a]">
+      <div className="w-full min-h-screen flex flex-col md:flex-row">
+        {/* Coluna da esquerda - Robô (60%) - INVERTIDO */}
+        <div className="hidden md:flex md:w-[60%] bg-black order-2 md:order-1">
+          <SplineSceneBasic />
         </div>
-        
-        <div>
-          <input
-            id="email"
-            type="email"
-            placeholder="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1a1a1a] text-white placeholder-[#666666] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0000] transition-all duration-300 text-sm"
-            autoComplete="email"
-            required
-          />
+
+        {/* Coluna da direita - Formulário (40%) - INVERTIDO */}
+        <div className="w-full md:w-[40%] bg-[#2a2a2a] p-8 flex flex-col justify-center order-1 md:order-2">
+          <RegisterForm />
         </div>
-        
-        <div>
-          <input
-            id="password"
-            type="password"
-            placeholder="senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1a1a1a] text-white placeholder-[#666666] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0000] transition-all duration-300 text-sm"
-            autoComplete="new-password"
-            required
-          />
-        </div>
-        
-        <div>
-          <input
-            id="confirm-password"
-            type="password"
-            placeholder="confirmar senha"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1a1a1a] text-white placeholder-[#666666] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0000] transition-all duration-300 text-sm"
-            autoComplete="new-password"
-            required
-          />
-        </div>
-        
-        <button
-          type="submit"
-          className="w-full py-3.5 bg-[#ff0000] text-white font-bold text-sm uppercase tracking-wide rounded-lg hover:bg-[#e60000] hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-[1.02] mt-2"
-        >
-          CRIAR CONTA
-        </button>
-      </form>
-      
-      <p className="text-center text-sm text-gray-400 mt-6">
-        Já tem uma conta?{' '}
-        <Link 
-          to="/login" 
-          className="text-[#ff0000] hover:underline transition-all duration-300"
-        >
-          Fazer login
-        </Link>
-      </p>
-    </AuthLayout>
+      </div>
+    </div>
   )
 }
 
