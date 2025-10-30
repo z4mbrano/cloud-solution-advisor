@@ -1,0 +1,73 @@
+/* Tailwind CSS v4 - Importação */
+@import "tailwindcss";
+
+/* Configurações de Tema Personalizadas (Tailwind v4) */
+@theme {
+  /* Cores personalizadas */
+  --color-oracle-red: #f80000;
+  
+  /* Animações personalizadas */
+  --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
+}
+
+/* Keyframes personalizados */
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
+
+/* Custom CSS for loader and animations */
+@layer utilities {
+  .loader {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #ff0000;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+  }
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* Focus states for better accessibility */
+input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+
+button:focus {
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666666;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff0000;
+}

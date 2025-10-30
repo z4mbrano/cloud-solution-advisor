@@ -39,7 +39,7 @@ function Chat({ messages, isLoading }) {
     <div className={styles.chatScrollArea}>
       {messages.length === 0 ? (
         <div className={styles.emptyState}>
-          <h1 className={styles.title}>☁️ Oracle Cloud Solution Advisor</h1>
+          <h1 className={styles.title}>☁️ Oracle Querry</h1>
           <p className={styles.subtitle}>Análise de Necessidades com IA</p>
         </div>
       ) : (

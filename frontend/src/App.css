@@ -12,10 +12,13 @@ body {
   font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
+  /* allow natural document flow so elements can size correctly */
+  min-height: 100vh;
+  background: #1a1a1a;
 }
 
 .App {
-  width: 100vw;
-  height: 100vh;
+  /* avoid forcing full viewport size which can break child sizing
+     use min-height so content can naturally size and be centered */
+  min-height: 100vh;
 }
