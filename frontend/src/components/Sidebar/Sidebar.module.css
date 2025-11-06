@@ -48,6 +48,14 @@
   transition: opacity 0.3s ease;
 }
 
+/* Seção de bots */
+.botsNav {
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #333;
+}
+
 .historyNav {
   flex-grow: 1;
   overflow-y: auto;
@@ -56,6 +64,7 @@
   flex-direction: column;
 }
 
+.sectionTitle,
 .historyTitle {
   color: #999;
   font-size: 12px;
@@ -66,10 +75,14 @@
   white-space: nowrap;
 }
 
+.botsList,
 .historyList {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+
+.historyList {
   flex-grow: 1;
 }
 
@@ -123,6 +136,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: opacity 0.3s ease;
+}
+
+/* Indicador do bot no histórico */
+.botIndicator {
+  font-size: 11px;
+  color: #8b8b8b;
+  font-weight: normal;
+  display: block;
+  margin-top: 2px;
 }
 
 .sidebarFooter {

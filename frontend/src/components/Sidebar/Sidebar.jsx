@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Menu, 
   Database, 
@@ -9,28 +9,81 @@ import {
   DatabaseZap, 
   Gauge, 
   Network,
-  LogOut
+  LogOut,
+  Bot,
+  Zap
 } from 'lucide-react'
 import styles from './Sidebar.module.css'
 
-// Dados dos itens do menu
-const menuItems = [
-  { id: 1, icon: Database, text: 'Análise de Banco de Dados para Sistema de E-commerce com Alta Demanda' },
-  { id: 2, icon: Box, text: 'Solução de Storage para Arquivamento de Dados Históricos' },
-  { id: 3, icon: Cloud, text: 'Compute Cloud para Processamento de Machine Learning' },
-  { id: 4, icon: Waypoints, text: 'Migração de Ambiente On-Premise para OCI' },
-  { id: 5, icon: AlertTriangle, text: 'Análise de Custos para Ambiente de Desenvolvimento' },
-  { id: 6, icon: DatabaseZap, text: 'Configuração de Alta Disponibilidade para Aplicação Crítica' },
-  { id: 7, icon: Gauge, text: 'Otimização de Performance para Banco de Dados' },
-  { id: 8, icon: Network, text: 'Arquitetura de Microsserviços na OCI' }
+// Dados dos bots
+const bots = [
+  { 
+    id: 'querrybot', 
+    icon: Bot, 
+    text: 'QuerryBot',
+    description: 'Chatbot especializado em vendas'
+  },
+  { 
+    id: 'querryarc', 
+    icon: Zap, 
+    text: 'QuerryArc',
+    description: 'Chatbot arquiteto de soluções'
+  }
 ]
 
-function Sidebar({ isCollapsed, toggleSidebar, activeChat, setActiveChat }) {
-  const [selectedItem, setSelectedItem] = useState(1)
+// Dados dos itens do histórico (carregados do localStorage)
+function loadHistoryFromStorage() {
+  try {
+    const stored = localStorage.getItem('chat_history')
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Erro ao carregar histórico:', error)
+    return []
+  }
+}
 
-  const handleItemClick = (id) => {
-    setSelectedItem(id)
-    if (setActiveChat) setActiveChat(id)
+function Sidebar({ isCollapsed, toggleSidebar, activeChat, setActiveChat, activeBot, setActiveBot }) {
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedBot, setSelectedBot] = useState(null)
+  const [historyItems, setHistoryItems] = useState(loadHistoryFromStorage)
+
+  // Carregar histórico do localStorage quando o componente monta
+  useEffect(() => {
+    const stored = loadHistoryFromStorage()
+    setHistoryItems(stored)
+  }, [])
+
+  // Salvar novo chat no histórico
+  const saveNewChatToHistory = (botId, chatId) => {
+    const newChat = {
+      id: chatId || `chat_${Date.now()}`,
+      botId: botId,
+      timestamp: new Date().toISOString(),
+      title: `client${historyItems.length + 1}`,
+      messages: []
+    }
+    
+    const updatedHistory = [newChat, ...historyItems]
+    setHistoryItems(updatedHistory)
+    localStorage.setItem('chat_history', JSON.stringify(updatedHistory))
+    return newChat.id
+  }
+
+  const handleBotClick = (botId) => {
+    setSelectedBot(botId)
+    setSelectedItem(null)
+    if (setActiveBot) setActiveBot(botId)
+    
+    // Criar novo chat para o bot
+    const chatId = saveNewChatToHistory(botId)
+    if (setActiveChat) setActiveChat(chatId)
+  }
+
+  const handleHistoryItemClick = (item) => {
+    setSelectedItem(item.id)
+    setSelectedBot(null)
+    if (setActiveChat) setActiveChat(item.id)
+    if (setActiveBot) setActiveBot(item.botId)
   }
 
   return (
@@ -52,19 +105,56 @@ function Sidebar({ isCollapsed, toggleSidebar, activeChat, setActiveChat }) {
         />
       </div>
 
+      {/* Seção de Bots */}
+      <nav className={styles.botsNav}>
+        <span className={`${styles.sectionTitle} ${isCollapsed ? styles.hidden : ''}`}>
+          Bots
+        </span>
+        <ul className={styles.botsList}>
+          {bots.map((bot) => {
+            const Icon = bot.icon
+            return (
+              <li key={bot.id} className={styles.historyItemWrapper}>
+                <button
+                  onClick={() => handleBotClick(bot.id)}
+                  title={isCollapsed ? bot.text : bot.description}
+                  className={`${styles.historyItem} ${selectedBot === bot.id ? styles.active : ''}`}
+                >
+                  {/* Borda vermelha ativa */}
+                  {selectedBot === bot.id && (
+                    <div className={styles.activeBorder}></div>
+                  )}
+                  
+                  {/* Ícone (sempre visível) */}
+                  <Icon size={20} className={styles.icon} />
+                  
+                  {/* Texto (só aparece se expandido) */}
+                  <span className={`${styles.itemText} ${isCollapsed ? styles.hidden : ''}`}>
+                    {bot.text}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+
       {/* Lista de Histórico */}
       <nav className={styles.historyNav}>
-        <span className={`${styles.historyTitle} ${isCollapsed ? styles.hidden : ''}`}>
-          Histórico de Análises
+        <span className={`${styles.sectionTitle} ${isCollapsed ? styles.hidden : ''}`}>
+          Histórico
         </span>
         <ul className={styles.historyList}>
-          {menuItems.map((item) => {
-            const Icon = item.icon
+          {historyItems.map((item) => {
+            // Ícone baseado no bot usado
+            const botData = bots.find(b => b.id === item.botId)
+            const Icon = botData ? botData.icon : Database
+            
             return (
               <li key={item.id} className={styles.historyItemWrapper}>
                 <button
-                  onClick={() => handleItemClick(item.id)}
-                  title={isCollapsed ? item.text : undefined}
+                  onClick={() => handleHistoryItemClick(item)}
+                  title={isCollapsed ? `${item.title} (${botData?.text || 'Bot'})` : undefined}
                   className={`${styles.historyItem} ${selectedItem === item.id ? styles.active : ''}`}
                 >
                   {/* Borda vermelha ativa */}
@@ -77,7 +167,10 @@ function Sidebar({ isCollapsed, toggleSidebar, activeChat, setActiveChat }) {
                   
                   {/* Texto (só aparece se expandido) */}
                   <span className={`${styles.itemText} ${isCollapsed ? styles.hidden : ''}`}>
-                    {item.text}
+                    {item.title}
+                    <span className={styles.botIndicator}>
+                      ({botData?.text || 'Bot'})
+                    </span>
                   </span>
                 </button>
               </li>

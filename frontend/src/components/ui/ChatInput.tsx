@@ -5,9 +5,10 @@ import styles from './ChatInput.module.css'
 interface ChatInputProps {
   onSendMessage: (message: string) => void
   disabled?: boolean
+  activeBot?: string
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false, activeBot }) => {
   const [inputValue, setInputValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -53,7 +54,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = 
         onKeyDown={handleKeyDown}
         rows={1}
         disabled={disabled}
-        placeholder="Descreva o desafio do seu cliente..."
+        placeholder={
+          activeBot === 'querrybot' 
+            ? "Conte-me sobre seu desafio de negócio..." 
+            : activeBot === 'querryarc' 
+            ? "Descreva sua necessidade técnica..." 
+            : "Selecione um bot para começar..."
+        }
         className={styles.textarea}
       />
 
