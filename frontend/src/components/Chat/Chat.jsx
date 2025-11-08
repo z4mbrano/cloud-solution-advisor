@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 import styles from './Chat.module.css'
 
 function Chat({ messages, isLoading }) {
@@ -18,21 +19,6 @@ function Chat({ messages, isLoading }) {
     } catch (err) {
       console.error('Erro ao copiar:', err)
     }
-  }
-
-  const formatMessage = (text) => {
-    // Formatar listas
-    let formatted = text.replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>')
-    formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-
-    // Formatar negrito
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-
-    // Formatar quebras de linha
-    formatted = formatted.replace(/\n\n/g, '</p><p>')
-    formatted = `<p>${formatted}</p>`
-
-    return formatted
   }
 
   return (
@@ -65,7 +51,21 @@ function Chat({ messages, isLoading }) {
                   </button>
                 )}
                 {message.sender === 'bot' ? (
-                  <div dangerouslySetInnerHTML={{ __html: formatMessage(message.text) }} />
+                  <div className={styles.markdownContent}>
+                    <ReactMarkdown 
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a {...props} target="_blank" rel="noopener noreferrer" className={styles.markdownLink} />
+                        ),
+                        p: ({ node, ...props }) => <p {...props} className={styles.markdownParagraph} />,
+                        ul: ({ node, ...props }) => <ul {...props} className={styles.markdownList} />,
+                        li: ({ node, ...props }) => <li {...props} className={styles.markdownListItem} />,
+                        strong: ({ node, ...props }) => <strong {...props} className={styles.markdownBold} />
+                      }}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+                  </div>
                 ) : (
                   <div>{message.text}</div>
                 )}

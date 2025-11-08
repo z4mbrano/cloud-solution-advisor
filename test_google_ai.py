@@ -7,8 +7,8 @@ try:
     print("🧪 Testando Google AI diretamente...")
     genai.configure(api_key=GOOGLE_API_KEY)
     
-    # Criar modelo
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Criar modelo - usar o mesmo modelo da API
+    model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
     # Teste simples
     response = model.generate_content("Diga olá em português")

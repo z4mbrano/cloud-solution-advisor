@@ -172,3 +172,80 @@
     max-width: 90%;
   }
 }
+
+/* Estilos para Markdown */
+.markdownContent {
+  color: inherit;
+  line-height: 1.6;
+}
+
+.markdownParagraph {
+  margin: 0 0 12px 0;
+}
+
+.markdownParagraph:last-child {
+  margin-bottom: 0;
+}
+
+.markdownLink {
+  color: #6499E9;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.markdownLink:hover {
+  color: #4B8CE8;
+  text-decoration: none;
+}
+
+.markdownList {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.markdownListItem {
+  margin: 5px 0;
+}
+
+.markdownBold {
+  font-weight: 600;
+  color: #ECECEC;
+}
+
+/* Adicionar suporte para outros elementos markdown */
+.markdownContent h1,
+.markdownContent h2,
+.markdownContent h3 {
+  color: #ECECEC;
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+}
+
+.markdownContent h1 { font-size: 1.5em; }
+.markdownContent h2 { font-size: 1.3em; }
+.markdownContent h3 { font-size: 1.1em; }
+
+.markdownContent code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.markdownContent pre {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.markdownContent blockquote {
+  border-left: 3px solid #6499E9;
+  padding-left: 16px;
+  margin: 12px 0;
+  font-style: italic;
+  color: #CECECE;
+}
