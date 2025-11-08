@@ -31,7 +31,7 @@ function Layout() {
   }
 
   const handleSendMessage = async (message) => {
-    if (message.trim() && !isLoading && activeBot) {
+    if (message.trim() && !isLoading && activeBot && activeChat) {
       const userMessage = message.trim()
       
       // Adicionar mensagem do usuário
@@ -48,12 +48,8 @@ function Layout() {
       setIsLoading(true)
 
       try {
-        // Contexto do bot
-        const botConfig = botConfigs[activeBot]
-        const contextualMessage = `${botConfig.personality}\n\nUsuário: ${userMessage}`
-        
-        // Chamar API com contexto do bot
-        const response = await chatAPI.sendMessage(contextualMessage)
+        // Chamar API com bot e chat específicos
+        const response = await chatAPI.sendMessage(userMessage, activeBot, activeChat)
         
         // Adicionar resposta da IA
         const botMessage = {
@@ -63,13 +59,13 @@ function Layout() {
           timestamp: new Date(),
           chatId: activeChat,
           botId: activeBot,
-          botName: botConfig.name
+          botName: response.bot_name
         }
         
         setMessages(prev => [...prev, botMessage])
 
-        // Salvar conversa no localStorage
-        updateChatHistory(activeChat, [...messages, newUserMessage, botMessage])
+        // Atualizar histórico local
+        updateLocalChatHistory(activeChat, [...messages, newUserMessage, botMessage])
       } catch (error) {
         console.error('Erro ao enviar mensagem:', error)
         const errorMessage = {
@@ -88,8 +84,8 @@ function Layout() {
     }
   }
 
-  // Atualizar histórico de chat no localStorage
-  const updateChatHistory = (chatId, messages) => {
+  // Atualizar histórico local no localStorage
+  const updateLocalChatHistory = (chatId, messages) => {
     try {
       const stored = localStorage.getItem('chat_history')
       const history = stored ? JSON.parse(stored) : []
@@ -100,21 +96,30 @@ function Layout() {
         localStorage.setItem('chat_history', JSON.stringify(history))
       }
     } catch (error) {
-      console.error('Erro ao salvar histórico:', error)
+      console.error('Erro ao salvar histórico local:', error)
     }
   }
 
-  // Carregar mensagens quando mudar o chat ativo
-  const loadChatMessages = (chatId) => {
+  // Carregar mensagens de um chat específico
+  const loadChatMessages = async (chatId) => {
     try {
-      const stored = localStorage.getItem('chat_history')
-      const history = stored ? JSON.parse(stored) : []
+      // Primeiro tentar carregar do backend
+      const backendMessages = await chatAPI.getChatHistory(chatId)
       
-      const chat = history.find(c => c.id === chatId)
-      if (chat && chat.messages) {
-        setMessages(chat.messages)
+      if (backendMessages && backendMessages.length > 0) {
+        // Converter formato do backend para o frontend
+        const formattedMessages = backendMessages.map(msg => ({
+          id: msg.id,
+          text: msg.text,
+          sender: msg.sender,
+          timestamp: new Date(),
+          chatId: msg.chat_id,
+          botId: msg.bot_id,
+          botName: msg.bot_name
+        }))
+        setMessages(formattedMessages)
       } else {
-        // Novo chat - mostrar saudação do bot
+        // Se não há mensagens no backend, mostrar saudação
         if (activeBot && botConfigs[activeBot]) {
           const greeting = {
             id: Date.now(),
@@ -131,8 +136,37 @@ function Layout() {
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error)
-      setMessages([])
+      console.error('Erro ao carregar mensagens do backend:', error)
+      
+      // Fallback: tentar carregar do localStorage
+      try {
+        const stored = localStorage.getItem('chat_history')
+        const history = stored ? JSON.parse(stored) : []
+        
+        const chat = history.find(c => c.id === chatId)
+        if (chat && chat.messages) {
+          setMessages(chat.messages)
+        } else {
+          // Novo chat - mostrar saudação do bot
+          if (activeBot && botConfigs[activeBot]) {
+            const greeting = {
+              id: Date.now(),
+              text: botConfigs[activeBot].greeting,
+              sender: 'bot',
+              timestamp: new Date(),
+              chatId: chatId,
+              botId: activeBot,
+              botName: botConfigs[activeBot].name
+            }
+            setMessages([greeting])
+          } else {
+            setMessages([])
+          }
+        }
+      } catch (localError) {
+        console.error('Erro ao carregar histórico local:', localError)
+        setMessages([])
+      }
     }
   }
 
