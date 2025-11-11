@@ -2,12 +2,16 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
 import os
+import sys
+
+# Adicionar o diretório pai ao path para importar config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from config import GOOGLE_API_KEY, GOOGLE_AI_MODEL, DEBUG_MODE, BACKEND_PORT
 
 app = Flask(__name__)
 CORS(app)
 
-# Configurar Google AI diretamente com a chave
-GOOGLE_API_KEY = "AIzaSyC5qEJ7TBSxndhoB3ZzogVxAbiCkqKg8TU"
+# Configurar Google AI
 try:
     if GOOGLE_API_KEY:
         genai.configure(api_key=GOOGLE_API_KEY)
@@ -118,7 +122,7 @@ def chat():
             print(f"Chat ID: {chat_id}")
             
             # Usar Google AI com contexto simplificado
-            model_name = 'gemini-2.0-flash-exp'
+            model_name = GOOGLE_AI_MODEL
             model = genai.GenerativeModel(model_name)
             
             # Construir prompt simples incluindo contexto
@@ -230,4 +234,6 @@ def get_bots():
     return jsonify(bots_info)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    print(f"🚀 Iniciando servidor na porta {BACKEND_PORT}")
+    print(f"🔧 Modo debug: {DEBUG_MODE}")
+    app.run(debug=DEBUG_MODE, port=BACKEND_PORT, host='0.0.0.0')

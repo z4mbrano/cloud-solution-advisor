@@ -1,53 +1,90 @@
 # Oracle Cloud Solution Advisor
 
-Sistema de chat com bots especializados em soluções Oracle Cloud Infrastructure.
+Sistema de chat inteligente com bots especializados em soluções Oracle Cloud Infrastructure, construído com React + Flask + Google AI.
+
+## 🏗️ Arquitetura do Projeto
+
+```
+cloud-solution-advisor/
+├── frontend/           # React + Vite frontend
+├── backend/            # Flask API backend
+├── bot/               # Testes e análises dos bots
+├── config.py          # Configurações centralizadas
+├── start-frontend.bat # Script para iniciar frontend
+├── start-backend.bat  # Script para iniciar backend
+└── run-tests.bat     # Script para executar testes
+```
 
 ## 🤖 Bots Disponíveis
 
-### QuerryBot
-- **Especialização**: Vendas e soluções comerciais
-- **Foco**: Identificar necessidades do cliente e apresentar soluções de negócio
-- **Formato de resposta**: Nome do Serviço, Categoria, Justificativa Técnica, Argumentos de Venda
+### QueryBot (Especialista em Soluções)
+- **ID**: `querrybot`
+- **Especialização**: Recomendação de serviços Oracle Cloud
+- **Formato**: Nome do Serviço, Categoria, Justificativa, Argumentos de Venda
+- **Uso**: Identificar e recomendar soluções específicas
 
-### QuerryArc  
-- **Especialização**: Arquitetura e implementação técnica
-- **Foco**: Design técnico, implementação e melhores práticas
-- **Formato de resposta**: Nome do Serviço, Categoria, Justificativa Técnica, Aspectos de Implementação
+### QueryArc (Arquiteto de Soluções)
+- **ID**: `querryarc`
+- **Especialização**: Arquiteturas de referência Oracle
+- **Formato**: Nome da Arquitetura, Link da Solução, Justificativa, Caso de Sucesso
+- **Uso**: Design de soluções complexas e arquiteturas completas
 
-## 🚀 Como Executar
+## 🚀 Quick Start
 
-### 1. Configurar a API Key
-
+### Inicialização Automática
 ```bash
-# Copiar arquivo de exemplo
-cp .env.example .env
+# 1. Backend
+.\start-backend.bat
 
-# Editar o arquivo .env e adicionar sua Google AI API Key
-GOOGLE_API_KEY=sua_chave_aqui
+# 2. Frontend (em outro terminal)
+.\start-frontend.bat
+
+# 3. Testes (opcional)
+.\run-tests.bat
 ```
 
-### 2. Backend (API)
+### URLs de Acesso
+- **Frontend**: http://localhost:5173/
+- **Backend API**: http://127.0.0.1:5000
+- **API Test**: http://127.0.0.1:5000/api/test
 
+## ⚙️ Configuração Manual
+
+### 1. Configurar Google AI API Key
+
+Edite o arquivo `config.py` e configure sua API key:
+```python
+GOOGLE_API_KEY = "sua_chave_do_google_ai_aqui"
+```
+
+### 2. Backend Manual
 ```bash
-# Instalar dependências Python
-pip install -r requirements-api.txt
-
-# Executar API
+cd backend
+pip install -r requirements.txt
 python api.py
 ```
 
-A API estará disponível em: `http://localhost:5000`
-
-### 3. Frontend
-
+### 3. Frontend Manual
 ```bash
-# Navegar para pasta frontend
 cd frontend
-
-# Instalar dependências
 npm install
+npm run dev
+```
 
-# Executar aplicação
+## 🧪 Testes e Validação
+
+### Executar Todos os Testes
+```bash
+.\run-tests.bat
+```
+
+### Testes Individuais
+```bash
+cd bot
+python test_final.py              # Teste rápido do sistema
+python test_conversation_flow.py  # Teste completo com contexto
+python test_google_ai.py          # Verificação da API Google AI
+```
 npm run dev
 ```
 
@@ -71,7 +108,10 @@ A aplicação estará disponível em: `http://localhost:3001`
 ## 📁 Estrutura do Projeto
 
 ```
-├── api.py                 # Backend Flask
+├── bot/                   # API Backend e Bots de IA
+│   ├── api.py            # Servidor Flask principal
+│   ├── requirements.txt  # Dependências Python
+│   └── test_*.py         # Scripts de teste e debug
 ├── frontend/
 │   ├── src/
 │   │   ├── components/    # Componentes React
@@ -80,7 +120,10 @@ A aplicação estará disponível em: `http://localhost:3001`
 │   │   │   └── ui/        # Componentes de interface
 │   │   └── services/      # Integração com API
 │   └── public/            # Assets estáticos
-└── requirements-api.txt   # Dependências Python
+├── config.py             # Configurações centralizadas
+├── start-backend.bat     # Script executar backend
+├── start-frontend.bat    # Script executar frontend
+└── run-tests.bat         # Script executar testes
 ```
 
 ## 🔧 Funcionalidades
